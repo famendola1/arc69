@@ -48,6 +48,10 @@ func New(algodClient *algod.Client, indexerClient *indexer.Client) *ARC69 {
 // Fetch attempts to retrieve the ARC69 metadata for an asset. An error is returned
 // if no metadata is found or if there is an error while parsing the metadata.
 func (a *ARC69) Fetch(ctx context.Context, assetID uint64) (*Metadata, error) {
+	if a.indexerClient == nil {
+		return nil, fmt.Errorf("client is missing")
+	}
+
 	resp, err := a.indexerClient.LookupAssetTransactions(assetID).TxType("acfg").Do(ctx)
 	if err != nil {
 		return nil, err
@@ -81,6 +85,10 @@ func (a *ARC69) Fetch(ctx context.Context, assetID uint64) (*Metadata, error) {
 // Update attempts to update the given ARC69 metadata for the given asset and
 // returns any errors.
 func (a *ARC69) Update(ctx context.Context, account crypto.Account, assetID uint64, meta *Metadata) error {
+	if a.algodClient == nil || a.indexerClient == nil {
+		return fmt.Errorf("client is missing")
+	}
+
 	if !meta.IsValid() {
 		return fmt.Errorf("invalid metadata")
 	}
